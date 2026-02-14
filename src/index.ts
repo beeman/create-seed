@@ -5,8 +5,11 @@ import { createApp } from './lib/create-app.ts'
 import { detectPm } from './lib/detect-pm.ts'
 import { getAppInfo } from './lib/get-app-info.ts'
 import { getArgs } from './lib/get-args.ts'
+import { getTemplates, type Template } from './lib/get-templates.ts'
 
 export { getAppInfo }
+
+const CUSTOM_TEMPLATE = '__custom__'
 
 async function promptText(options: Parameters<typeof p.text>[0]): Promise<string> {
   const value = await p.text(options)
@@ -28,7 +31,7 @@ function promptName(): Promise<string> {
   })
 }
 
-function promptTemplate(): Promise<string> {
+function promptCustomTemplate(): Promise<string> {
   return promptText({
     message: 'Template',
     placeholder: 'gh:owner/repo/path',
@@ -38,14 +41,79 @@ function promptTemplate(): Promise<string> {
   })
 }
 
+async function promptTemplate(templates: Template[]): Promise<string> {
+  if (templates.length === 0) {
+    return promptCustomTemplate()
+  }
+
+  const value = await p.select({
+    message: 'Select a template',
+    options: [
+      ...templates.map((t) => ({
+        hint: t.description,
+        label: t.name,
+        value: t.repo,
+      })),
+      { hint: 'Enter a custom template path', label: 'Custom', value: CUSTOM_TEMPLATE },
+    ],
+  })
+
+  if (p.isCancel(value)) {
+    p.cancel('Cancelled.')
+    process.exit(0)
+  }
+
+  if (value === CUSTOM_TEMPLATE) {
+    return promptCustomTemplate()
+  }
+
+  return value
+}
+
+async function fetchTemplatesSafe(url: string): Promise<Template[]> {
+  try {
+    return await getTemplates(url)
+  } catch {
+    return []
+  }
+}
+
+function formatTemplateList(templates: Template[]): string {
+  const maxName = Math.max(...templates.map((t) => t.name.length))
+  const pad = maxName + 2
+  return templates.map((t) => `  ${t.name.padEnd(pad)} ${t.description}`).join('\n')
+}
+
 export async function main(argv: string[]): Promise<void> {
   const args = getArgs(argv)
   const { name, version } = getAppInfo()
 
   p.intro(`${name} ${version}`)
 
+  // Handle --list
+  if (args.list) {
+    try {
+      const templates = await getTemplates(args.templatesUrl)
+      if (templates.length === 0) {
+        p.log.warn('No templates found.')
+      } else {
+        p.note(formatTemplateList(templates), 'Available templates')
+      }
+    } catch (error) {
+      p.log.error(error instanceof Error ? error.message : String(error))
+    }
+    p.outro(`Use: ${name} <project> -t <template-name-or-repo>`)
+    return
+  }
+
   const projectName = args.name ?? (await promptName())
-  const template = args.template ?? (await promptTemplate())
+
+  // Resolve template: CLI arg, or interactive select from registry
+  let template = args.template
+  if (!template) {
+    const templates = await fetchTemplatesSafe(args.templatesUrl)
+    template = await promptTemplate(templates)
+  }
 
   const targetDir = resolve(projectName)
 
