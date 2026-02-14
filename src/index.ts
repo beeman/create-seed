@@ -8,29 +8,63 @@ import { getArgs } from './lib/get-args.ts'
 
 export { getAppInfo }
 
+async function promptText(options: Parameters<typeof p.text>[0]): Promise<string> {
+  const value = await p.text(options)
+  if (p.isCancel(value)) {
+    p.cancel('Cancelled.')
+    process.exit(0)
+  }
+  return value.trim()
+}
+
+function promptName(): Promise<string> {
+  return promptText({
+    message: 'Project name',
+    placeholder: 'my-app',
+    validate: (v = '') => {
+      if (!v.trim()) return 'Project name is required'
+      if (/[^a-z0-9._-]/i.test(v.trim())) return 'Invalid characters in project name'
+    },
+  })
+}
+
+function promptTemplate(): Promise<string> {
+  return promptText({
+    message: 'Template',
+    placeholder: 'gh:owner/repo/path',
+    validate: (v = '') => {
+      if (!v.trim()) return 'Template is required'
+    },
+  })
+}
+
 export async function main(argv: string[]): Promise<void> {
   const args = getArgs(argv)
   const { name, version } = getAppInfo()
 
   p.intro(`${name} ${version}`)
 
-  if (!args.name) {
-    p.cancel('Project name is required. Usage: create-seed <name> -t <template>')
-    process.exit(1)
-  }
+  const projectName = args.name ?? (await promptName())
+  const template = args.template ?? (await promptTemplate())
 
-  if (!args.template) {
-    p.cancel('Template is required. Usage: create-seed <name> -t <template>')
-    process.exit(1)
-  }
+  const targetDir = resolve(projectName)
 
-  const targetDir = resolve(args.name)
+  if (existsSync(targetDir)) {
+    const overwrite = await p.confirm({
+      initialValue: false,
+      message: `Directory "${projectName}" already exists. Overwrite?`,
+    })
+    if (p.isCancel(overwrite) || !overwrite) {
+      p.cancel('Cancelled.')
+      process.exit(0)
+    }
+  }
 
   if (args.dryRun) {
     p.note(
       [
-        `Name:       ${args.name}`,
-        `Template:   ${args.template}`,
+        `Name:       ${projectName}`,
+        `Template:   ${template}`,
         `Target:     ${targetDir}`,
         `PM:         ${args.pm ?? 'auto-detect'}`,
         `Skip git:   ${args.skipGit}`,
@@ -43,7 +77,7 @@ export async function main(argv: string[]): Promise<void> {
   }
 
   try {
-    await createApp({ args, targetDir })
+    await createApp({ args: { ...args, name: projectName, template }, targetDir })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     p.cancel(`Failed: ${message}`)
@@ -54,7 +88,7 @@ export async function main(argv: string[]): Promise<void> {
   }
 
   const pm = detectPm(args.pm)
-  const steps = [`cd ${args.name}`]
+  const steps = [`cd ${projectName}`]
 
   // Suggest a run command based on what scripts the template actually has
   const pkgPath = resolve(targetDir, 'package.json')
