@@ -15,7 +15,10 @@ export function getTemplatesUrl(): string {
 }
 
 function isLocalPath(source: string): boolean {
-  return source.startsWith('./') || source.startsWith('../') || source.startsWith('/') || source.endsWith('.json')
+  if (source.startsWith('http://') || source.startsWith('https://')) {
+    return false
+  }
+  return source.startsWith('./') || source.startsWith('../') || source.startsWith('/')
 }
 
 async function fetchData(source: string): Promise<unknown> {

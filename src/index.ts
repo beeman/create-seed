@@ -25,8 +25,12 @@ function promptName(): Promise<string> {
     message: 'Project name',
     placeholder: 'my-app',
     validate: (v = '') => {
-      if (!v.trim()) return 'Project name is required'
-      if (/[^a-z0-9._-]/i.test(v.trim())) return 'Invalid characters in project name'
+      if (!v.trim()) {
+        return 'Project name is required'
+      }
+      if (/[^a-z0-9._-]/i.test(v.trim())) {
+        return 'Invalid characters in project name'
+      }
     },
   })
 }
@@ -36,7 +40,9 @@ function promptCustomTemplate(): Promise<string> {
     message: 'Template',
     placeholder: 'gh:owner/repo/path',
     validate: (v = '') => {
-      if (!v.trim()) return 'Template is required'
+      if (!v.trim()) {
+        return 'Template is required'
+      }
     },
   })
 }
