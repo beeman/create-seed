@@ -1,72 +1,91 @@
-# create-seed
+# create-seed 🌱
 
-This is a template for creating a modern TypeScript library or package using [Bun](https://bun.sh/). It comes pre-configured with essential tools for development, testing, linting, and publishing.
+Scaffold a new project from a template. Fast, portable, zero config.
 
-## Features
+## Usage
 
-*   **Bun-first development**: Leverages Bun for lightning-fast installs, runs, and tests.
-*   **TypeScript support**: Write type-safe code from the start.
-*   **Linting & Formatting**: Enforced with [Biome](https://biomejs.dev/) for consistent code style.
-*   **Bundling**: Uses [tsup](https://tsup.js.org/) for efficient bundling into ESM and CJS formats, with type declarations.
-*   **Testing**: Built-in unit testing with `bun test`.
-*   **Versioning & Publishing**: Managed with [Changesets](https://github.com/changesets/changesets) for streamlined releases to npm.
-*   **GitHub Actions**: Continuous Integration (CI) workflows for automated build, test, lint, and publish processes.
+```bash
+# With bun
+bun create seed my-app -t gh:beeman/templates/bun-library
 
-## Getting Started
+# With npx
+npx create-seed my-app -t gh:beeman/templates/bun-library
 
-To use this template, you typically would use a scaffolding tool like `bunx create-something -t create-seed`.
+# With pnpx
+pnpx create-seed my-app -t gh:beeman/templates/bun-library
+```
 
-### Installation
+## Options
 
-If you're using this template directly (e.g., after cloning), you can install dependencies with Bun:
+```
+Usage: create-seed [options] [name]
+
+Scaffold a new project from a template
+
+Arguments:
+  name                         Project name
+
+Options:
+  -V, --version                output the version number
+  -t, --template <template>    Template to use (gh:owner/repo/path or local path)
+  --pm <pm>                    Package manager (npm|pnpm|bun, default: auto-detect)
+  --skip-git                   Skip git initialization (default: false)
+  --skip-install               Skip installing dependencies (default: false)
+  -d, --dry-run                Dry run (default: false)
+  -v, --verbose                Verbose output (default: false)
+  -h, --help                   display help for command
+```
+
+## Templates
+
+Any GitHub repo (or subdirectory) works as a template:
+
+```bash
+# Full repo
+create-seed my-app -t gh:owner/repo
+
+# Subdirectory of a repo
+create-seed my-app -t gh:owner/repo/path/to/template
+
+# Local path
+create-seed my-app -t ./my-local-template
+```
+
+### Available templates
+
+| Template | Description |
+|----------|-------------|
+| `gh:beeman/templates/bun-library` | TypeScript library with Bun, tsup, Biome, Changesets |
+
+## What it does
+
+1. **Clones the template** — downloads from GitHub (via [giget](https://github.com/unjs/giget)) or copies from a local path
+2. **Installs dependencies** — auto-detects your package manager (bun/npm/pnpm)
+3. **Initializes git** — `git init` + initial commit (skips gracefully if git is not installed or not configured)
+
+## Package manager detection
+
+`create-seed` auto-detects which package manager you're using based on how you ran it:
+
+| Command | Detected PM |
+|---------|-------------|
+| `bun create seed` | bun |
+| `npx create-seed` | npm |
+| `pnpx create-seed` | pnpm |
+
+Override with `--pm`:
+
+```bash
+create-seed my-app -t gh:owner/repo --pm bun
+```
+
+## Development
 
 ```bash
 bun install
-```
-
-### Development
-
-*   **Build**: `bun run build`
-*   **Type Check**: `bun run check-types`
-*   **Lint**: `bun run lint`
-*   **Lint & Fix**: `bun run lint:fix`
-*   **Test**: `bun test`
-*   **Test (Watch Mode)**: `bun run test:watch`
-
-### Publishing
-
-This template uses Changesets for versioning and publishing.
-
-1.  **Add a changeset**:
-    ```bash
-    bun changeset
-    ```
-    Follow the prompts to describe your changes. This will create a markdown file in `.changeset/`.
-
-2.  **Version packages**:
-    ```bash
-    bun run version
-    ```
-    This command reads the changeset files, updates package versions, updates `CHANGELOG.md`, and deletes the used changeset files. It also runs `bun lint:fix`.
-
-3.  **Publish to npm**:
-    ```bash
-    bun run release
-    ```
-    This command builds the package and publishes it to npm. Ensure you are logged into npm (`npm login`) or have `NPM_TOKEN` configured in your CI environment.
-
-## Project Structure
-
-```
-.
-├── src/             # Source code for your library
-│   └── index.ts     # Main entry point for your library
-├── test/            # Unit tests
-│   └── index.test.ts # Example test file
-├── tsup.config.ts   # Configuration for tsup (bundling)
-├── biome.json       # Biome linter/formatter configuration
-├── package.json     # Project metadata and scripts
-└── ... (other config files and GitHub workflows)
+bun run build
+bun run test
+bun run lint
 ```
 
 ## License
