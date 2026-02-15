@@ -73,14 +73,14 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup
 
+      - name: Create canary version
+        run: bun x changeset version --snapshot canary
+
       - name: Build
         run: bun run build
 
       - name: Check package
         run: bun x publint
-
-      - name: Create canary version
-        run: bun x changeset version --snapshot canary
 
       - name: Publish canary to NPM
         run: bun x changeset publish --tag canary
