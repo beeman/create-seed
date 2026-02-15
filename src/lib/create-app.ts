@@ -25,7 +25,12 @@ async function runStep(title: string, fn: () => Promise<string>): Promise<void> 
 }
 
 export async function createApp({ args, targetDir }: CreateAppOptions): Promise<void> {
-  const template = findTemplate(args.template)
+  let template: Awaited<ReturnType<typeof findTemplate>>
+
+  await runStep('Resolving template', async () => {
+    template = await findTemplate(args.template)
+    return `Template resolved to ${template.id}`
+  })
 
   await runStep('Cloning template', async () => {
     await cloneTemplate(template, targetDir)
