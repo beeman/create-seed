@@ -105,6 +105,60 @@ describe('generateRegistry', () => {
     expect(registry.templates[0]?.path).toBe('lib')
     expect(registry.templates[0]?.id).toBeDefined()
   })
+
+  test('builds correct id from repository.name', () => {
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ repository: { name: 'owner/templates', type: 'git' } }))
+    createTemplate('lib', { description: 'A lib', name: 'lib' })
+
+    const registry = generateRegistry(root)
+    expect(registry.templates[0]?.id).toBe('gh:owner/templates/lib')
+  })
+
+  test('builds correct id from repository.url (https)', () => {
+    writeFileSync(
+      join(root, 'package.json'),
+      JSON.stringify({ repository: { type: 'git', url: 'https://github.com/owner/templates.git' } }),
+    )
+    createTemplate('lib', { description: 'A lib', name: 'lib' })
+
+    const registry = generateRegistry(root)
+    expect(registry.templates[0]?.id).toBe('gh:owner/templates/lib')
+  })
+
+  test('builds correct id from repository.url (git+https)', () => {
+    writeFileSync(
+      join(root, 'package.json'),
+      JSON.stringify({ repository: { type: 'git', url: 'git+https://github.com/owner/templates.git' } }),
+    )
+    createTemplate('lib', { description: 'A lib', name: 'lib' })
+
+    const registry = generateRegistry(root)
+    expect(registry.templates[0]?.id).toBe('gh:owner/templates/lib')
+  })
+
+  test('builds correct id from repository string shorthand', () => {
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ repository: 'owner/templates' }))
+    createTemplate('lib', { description: 'A lib', name: 'lib' })
+
+    const registry = generateRegistry(root)
+    expect(registry.templates[0]?.id).toBe('gh:owner/templates/lib')
+  })
+
+  test('builds correct id from repository SSH URL', () => {
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ repository: 'git@github.com:owner/templates.git' }))
+    createTemplate('lib', { description: 'A lib', name: 'lib' })
+
+    const registry = generateRegistry(root)
+    expect(registry.templates[0]?.id).toBe('gh:owner/templates/lib')
+  })
+
+  test('builds correct id from npm github: shorthand', () => {
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ repository: 'github:owner/templates' }))
+    createTemplate('lib', { description: 'A lib', name: 'lib' })
+
+    const registry = generateRegistry(root)
+    expect(registry.templates[0]?.id).toBe('gh:owner/templates/lib')
+  })
 })
 
 describe('writeRegistry', () => {

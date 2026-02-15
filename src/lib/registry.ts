@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
@@ -38,8 +39,12 @@ export function scanTemplates(root: string): RegistryTemplate[] {
   const templates: RegistryTemplate[] = []
 
   for (const entry of entries) {
-    if (!entry.isDirectory()) continue
-    if (entry.name.startsWith('.') || entry.name === 'node_modules') continue
+    if (!entry.isDirectory()) {
+      continue
+    }
+    if (entry.name.startsWith('.') || entry.name === 'node_modules') {
+      continue
+    }
     const dir = join(root, entry.name)
     if (isTemplate(dir)) {
       const info = readTemplateInfo(dir, entry.name)
@@ -84,17 +89,50 @@ function readRegistryMeta(root: string): RegistryMeta {
   return { description: '', name: 'Templates' }
 }
 
+/**
+ * Normalize a repository value (URL, object, or string) into an "owner/repo" slug.
+ * Handles: git+https://..., https://github.com/..., git@github.com:..., "owner/repo", { name, url }
+ */
+function normalizeRepoSlug(input: unknown): string | undefined {
+  const raw = (() => {
+    if (typeof input === 'string') {
+      return input
+    }
+    if (typeof input === 'object' && input) {
+      const repo = input as { name?: unknown; url?: unknown }
+      if (typeof repo.name === 'string') {
+        return repo.name
+      }
+      if (typeof repo.url === 'string') {
+        return repo.url
+      }
+    }
+    return undefined
+  })()
+
+  if (!raw) {
+    return undefined
+  }
+
+  const cleaned = raw
+    .replace(/^github:/, '')
+    .replace(/^git\+/, '')
+    .replace(/^https?:\/\/github\.com\//, '')
+    .replace(/^git@github\.com:/, '')
+
+  const match = cleaned.match(/^([^/]+\/[^/#]+?)(?:\.git)?(?:[#/].*)?$/)
+  return match?.[1]
+}
+
 function detectRepoName(root: string): string | undefined {
-  // 1. Check top-level package.json for repository.name (preferred, like CSD)
+  // 1. Check top-level package.json for repository
   const pkgPath = join(root, 'package.json')
   if (existsSync(pkgPath)) {
     try {
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
-      if (typeof pkg.repository === 'object' && pkg.repository?.name) {
-        return pkg.repository.name
-      }
-      if (typeof pkg.repository === 'string' && pkg.repository.includes('/')) {
-        return pkg.repository
+      const slug = normalizeRepoSlug(pkg.repository)
+      if (slug) {
+        return slug
       }
     } catch {
       // ignore
@@ -103,14 +141,12 @@ function detectRepoName(root: string): string | undefined {
 
   // 2. Fall back to git remote
   try {
-    const { execSync } = require('node:child_process')
     const remote = execSync('git remote get-url origin', {
       cwd: root,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
     }).trim()
-    const match = remote.match(/github\.com[/:](.+?)(?:\.git)?$/)
-    return match?.[1]
+    return normalizeRepoSlug(remote)
   } catch {
     return undefined
   }

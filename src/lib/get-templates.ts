@@ -14,10 +14,7 @@ export function getTemplatesUrl(): string {
 }
 
 function isLocalPath(source: string): boolean {
-  if (source.startsWith('http://') || source.startsWith('https://')) {
-    return false
-  }
-  return source.startsWith('./') || source.startsWith('../') || source.startsWith('/')
+  return !source.startsWith('http://') && !source.startsWith('https://')
 }
 
 async function fetchData(source: string): Promise<unknown> {

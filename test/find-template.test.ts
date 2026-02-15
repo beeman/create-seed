@@ -1,5 +1,20 @@
-import { describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { resolve } from 'node:path'
 import { findTemplate } from '../src/lib/find-template.ts'
+
+const originalUrl = process.env.TEMPLATES_URL
+
+beforeAll(() => {
+  process.env.TEMPLATES_URL = resolve(import.meta.dirname, 'fixtures/templates.json')
+})
+
+afterAll(() => {
+  if (originalUrl !== undefined) {
+    process.env.TEMPLATES_URL = originalUrl
+  } else {
+    delete process.env.TEMPLATES_URL
+  }
+})
 
 describe('findTemplate', () => {
   test('treats paths starting with ./ as local', async () => {
@@ -30,8 +45,22 @@ describe('findTemplate', () => {
   })
 
   test('resolves short name from registry', async () => {
-    const result = await findTemplate('bun-library')
-    expect(result).toEqual({ id: 'gh:beeman/templates/bun-library', mode: 'external' })
+    const result = await findTemplate('test-library')
+    expect(result).toEqual({ id: 'gh:test-owner/templates/test-library', mode: 'external' })
+  })
+
+  test('treats Windows drive letter paths as local', async () => {
+    expect(await findTemplate('C:\\Users\\dev\\template')).toEqual({
+      id: 'C:\\Users\\dev\\template',
+      mode: 'local',
+    })
+  })
+
+  test('treats UNC paths as local', async () => {
+    expect(await findTemplate('\\\\server\\share\\template')).toEqual({
+      id: '\\\\server\\share\\template',
+      mode: 'local',
+    })
   })
 
   test('throws for unknown short name', async () => {
