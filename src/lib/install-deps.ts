@@ -22,7 +22,7 @@ export async function installDeps(targetDir: string, explicitPm?: string): Promi
     }
   }
 
-  await execAsync(pm, ['install'], { cwd: targetDir })
+  await execAsync(pm, ['install'], { cwd: targetDir, shell: true })
 
   return pm
 }
