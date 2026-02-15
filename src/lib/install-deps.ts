@@ -1,7 +1,7 @@
-import { execSync } from 'node:child_process'
 import { existsSync, unlinkSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { detectPm, type PackageManager } from './detect-pm.ts'
+import { execAsync } from './exec-async.ts'
 
 const LOCKFILES: Record<PackageManager, string> = {
   bun: 'bun.lock',
@@ -22,7 +22,7 @@ export async function installDeps(targetDir: string, explicitPm?: string): Promi
     }
   }
 
-  execSync(`${pm} install`, { cwd: targetDir, stdio: 'ignore' })
+  await execAsync(pm, ['install'], { cwd: targetDir })
 
   return pm
 }
