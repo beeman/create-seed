@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as p from '@clack/prompts'
 import { createApp } from './lib/create-app.ts'
@@ -201,6 +201,7 @@ export async function main(argv: string[]): Promise<void> {
       p.cancel('Cancelled.')
       process.exit(0)
     }
+    rmSync(targetDir, { recursive: true })
   }
 
   if (args.dryRun) {
