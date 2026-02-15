@@ -40,7 +40,7 @@ export async function initGit(targetDir: string): Promise<'initialized' | 'skipp
 
   await execAsync('git', ['init', '-b', 'main'], { cwd: targetDir, env })
   await execAsync('git', ['add', '.'], { cwd: targetDir, env })
-  await execAsync('git', ['commit', '-m', 'Initial commit'], { cwd: targetDir, env })
+  await execAsync('git', ['commit', '-m', 'chore: initial commit'], { cwd: targetDir, env })
 
   return 'initialized'
 }
