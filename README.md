@@ -79,6 +79,20 @@ Override with `--pm`:
 bun x create-seed@latest my-app -t gh:owner/repo --pm bun
 ```
 
+## Analytics
+
+Anonymous usage statistics are collected via [Umami](https://umami.is) to help improve the tool. No personally identifiable information is collected.
+
+Data collected: OS, architecture, Node version, package manager, template name, and success/failure status.
+
+To opt out, set the `DO_NOT_TRACK` environment variable:
+
+```bash
+DO_NOT_TRACK=1 bun x create-seed@latest my-app -t gh:owner/repo
+```
+
+Analytics are also automatically disabled in CI environments.
+
 ## Development
 
 ```bash

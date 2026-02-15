@@ -7,6 +7,7 @@ import { getAppInfo } from './lib/get-app-info.ts'
 import { getArgs } from './lib/get-args.ts'
 import { getTemplates, type Template } from './lib/get-templates.ts'
 import { generateReadme, generateRegistry, validateRegistry, writeReadme, writeRegistry } from './lib/registry.ts'
+import { trackEvent } from './lib/telemetry.ts'
 
 export { getAppInfo }
 
@@ -227,16 +228,27 @@ export async function main(argv: string[]): Promise<void> {
     return
   }
 
+  const telemetryData = {
+    pm: args.pm ?? detectPm(),
+    skipGit: args.skipGit,
+    skipInstall: args.skipInstall,
+    template,
+    version,
+  }
+
   try {
     await createApp({ args: { ...args, name: projectName, template }, targetDir })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
+    await trackEvent({ data: { ...telemetryData, error: message }, event: 'create-failed' })
     p.cancel(`Failed: ${message}`)
     if (args.verbose && error instanceof Error && error.stack) {
       console.error(error.stack)
     }
     process.exit(1)
   }
+
+  await trackEvent({ data: telemetryData, event: 'create' })
 
   const pm = detectPm(args.pm)
   const steps = [`cd ${projectName}`]
