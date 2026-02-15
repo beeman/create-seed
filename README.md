@@ -6,13 +6,13 @@ Scaffold a new project from a template. Fast, portable, zero config.
 
 ```bash
 # With bun
-bun create seed my-app -t gh:beeman/templates/bun-library
+bun x create-seed@latest my-app -t gh:beeman/templates/bun-library
 
 # With npx
-npx create-seed my-app -t gh:beeman/templates/bun-library
+npx create-seed@latest my-app -t gh:beeman/templates/bun-library
 
 # With pnpx
-pnpx create-seed my-app -t gh:beeman/templates/bun-library
+pnpx create-seed@latest my-app -t gh:beeman/templates/bun-library
 ```
 
 ## Options
@@ -42,13 +42,13 @@ Any GitHub repo (or subdirectory) works as a template:
 
 ```bash
 # Full repo
-create-seed my-app -t gh:owner/repo
+bun x create-seed@latest my-app -t gh:owner/repo
 
 # Subdirectory of a repo
-create-seed my-app -t gh:owner/repo/path/to/template
+bun x create-seed@latest my-app -t gh:owner/repo/path/to/template
 
 # Local path
-create-seed my-app -t ./my-local-template
+bun x create-seed@latest my-app -t ./my-local-template
 ```
 
 ### Available templates
@@ -69,14 +69,14 @@ create-seed my-app -t ./my-local-template
 
 | Command | Detected PM |
 |---------|-------------|
-| `bun create seed` | bun |
-| `npx create-seed` | npm |
-| `pnpx create-seed` | pnpm |
+| `bun x create-seed@latest` | bun |
+| `npx create-seed@latest` | npm |
+| `pnpx create-seed@latest` | pnpm |
 
 Override with `--pm`:
 
 ```bash
-create-seed my-app -t gh:owner/repo --pm bun
+bun x create-seed@latest my-app -t gh:owner/repo --pm bun
 ```
 
 ## Development
