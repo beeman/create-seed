@@ -38,7 +38,7 @@ export async function createApp({ args, targetDir }: CreateAppOptions): Promise<
   })
 
   await runStep('Rewriting package.json', async () => {
-    rewritePackageJson(targetDir, args.name)
+    await rewritePackageJson(targetDir, args.name)
     return 'Package configured'
   })
 

@@ -1,7 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { execAsync } from './exec-async.ts'
 
-export function rewritePackageJson(targetDir: string, projectName: string): void {
+export async function rewritePackageJson(targetDir: string, projectName: string): Promise<void> {
   const pkgPath = resolve(targetDir, 'package.json')
   if (!existsSync(pkgPath)) {
     return
@@ -21,4 +22,16 @@ export function rewritePackageJson(targetDir: string, projectName: string): void
   pkg.description = ''
 
   writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
+
+  // If biome is configured, format the rewritten package.json
+  const biomePath = resolve(targetDir, 'biome.json')
+  const biomeAltPath = resolve(targetDir, 'biome.jsonc')
+  if (existsSync(biomePath) || existsSync(biomeAltPath)) {
+    try {
+      await execAsync('npx', ['@biomejs/biome', 'check', '--write', 'package.json'], { cwd: targetDir })
+    } catch (error) {
+      // Best-effort — don't fail the scaffold if biome formatting fails
+      console.warn('Warning: Failed to format package.json with Biome.', error)
+    }
+  }
 }
