@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process'
+import { execAsync } from './exec-async.ts'
 
 function hasGit(): boolean {
   try {
@@ -36,11 +37,10 @@ export async function initGit(targetDir: string): Promise<'initialized' | 'skipp
     GIT_COMMITTER_EMAIL: email,
     GIT_COMMITTER_NAME: name,
   }
-  const run = (cmd: string) => execSync(cmd, { cwd: targetDir, env, stdio: 'ignore' })
 
-  run('git init -b main')
-  run('git add .')
-  run('git commit -m "Initial commit"')
+  await execAsync('git', ['init', '-b', 'main'], { cwd: targetDir, env })
+  await execAsync('git', ['add', '.'], { cwd: targetDir, env })
+  await execAsync('git', ['commit', '-m', 'Initial commit'], { cwd: targetDir, env })
 
   return 'initialized'
 }
