@@ -1,0 +1,10 @@
+{
+  "templates": [
+    {
+      "description": "Test template for unit tests",
+      "id": "gh:test-owner/templates/test-library",
+      "name": "test-library",
+      "path": "test-library"
+    }
+  ]
+}

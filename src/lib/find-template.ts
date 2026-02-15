@@ -1,3 +1,4 @@
+import { isAbsolute } from 'node:path'
 import { getTemplates, getTemplatesUrl, type Template } from './get-templates.ts'
 
 export interface TemplateInfo {
@@ -5,9 +6,19 @@ export interface TemplateInfo {
   mode: 'external' | 'local'
 }
 
+function isLocalTemplate(template: string): boolean {
+  return (
+    template.startsWith('./') ||
+    template.startsWith('../') ||
+    isAbsolute(template) ||
+    /^[a-zA-Z]:[\\/]/.test(template) ||
+    template.startsWith('\\\\')
+  )
+}
+
 export async function findTemplate(template: string): Promise<TemplateInfo> {
-  // Local path
-  if (template.startsWith('./') || template.startsWith('../') || template.startsWith('/')) {
+  // Local path (POSIX, Windows drive letter, UNC)
+  if (isLocalTemplate(template)) {
     return { id: template, mode: 'local' }
   }
 
