@@ -1,16 +1,32 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { access, readFile, writeFile } from 'node:fs/promises'
 import { basename, resolve } from 'node:path'
 import { execAsync } from './exec-async.ts'
 
-export async function rewritePackageJson(targetDir: string, projectName: string): Promise<void> {
+export interface RewriteResult {
+  originalName: string | undefined
+  newName: string
+}
+
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await access(path)
+    return true
+  } catch {
+    return false
+  }
+}
+
+export async function rewritePackageJson(targetDir: string, projectName: string): Promise<RewriteResult> {
   const pkgPath = resolve(targetDir, 'package.json')
-  if (!existsSync(pkgPath)) {
-    return
+  const newName = basename(resolve(projectName))
+  if (!(await fileExists(pkgPath))) {
+    return { newName, originalName: undefined }
   }
 
-  const pkg: Record<string, unknown> = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+  const pkg: Record<string, unknown> = JSON.parse(await readFile(pkgPath, 'utf-8'))
 
-  pkg.name = basename(resolve(projectName))
+  const originalName = typeof pkg.name === 'string' ? pkg.name : undefined
+  pkg.name = newName
   pkg.version = '0.0.0'
 
   // Clear template-specific fields
@@ -21,12 +37,10 @@ export async function rewritePackageJson(targetDir: string, projectName: string)
   // Reset description
   pkg.description = ''
 
-  writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
+  await writeFile(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
 
   // If biome is configured, format the rewritten package.json
-  const biomePath = resolve(targetDir, 'biome.json')
-  const biomeAltPath = resolve(targetDir, 'biome.jsonc')
-  if (existsSync(biomePath) || existsSync(biomeAltPath)) {
+  if ((await fileExists(resolve(targetDir, 'biome.json'))) || (await fileExists(resolve(targetDir, 'biome.jsonc')))) {
     try {
       await execAsync('npx', ['@biomejs/biome', 'check', '--write', 'package.json'], { cwd: targetDir })
     } catch (error) {
@@ -34,4 +48,6 @@ export async function rewritePackageJson(targetDir: string, projectName: string)
       console.warn('Warning: Failed to format package.json with Biome.', error)
     }
   }
+
+  return { newName, originalName }
 }
