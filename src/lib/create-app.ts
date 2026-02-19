@@ -1,9 +1,11 @@
+import { relative } from 'node:path'
 import * as p from '@clack/prompts'
 import { cloneTemplate } from './clone-template.ts'
 import { findTemplate } from './find-template.ts'
 import type { ResolvedArgs } from './get-args.ts'
 import { commitGitRepo, initGitRepo } from './init-git.ts'
 import { installDeps } from './install-deps.ts'
+import { renameReferences } from './rename-references.ts'
 import { rewritePackageJson } from './rewrite-package-json.ts'
 
 export interface CreateAppOptions {
@@ -37,9 +39,26 @@ export async function createApp({ args, targetDir }: CreateAppOptions): Promise<
     return 'Template cloned'
   })
 
+  let originalName: string | undefined
+  let newName: string
+
   await runStep('Rewriting package.json', async () => {
-    await rewritePackageJson(targetDir, args.name)
+    const result = await rewritePackageJson(targetDir, args.name)
+    originalName = result.originalName
+    newName = result.newName
     return 'Package configured'
+  })
+
+  await runStep('Renaming references', async () => {
+    if (!originalName || originalName === newName) {
+      return 'Skipped — no rename needed'
+    }
+    const { count, files } = await renameReferences(targetDir, [originalName], newName)
+    if (args.verbose && files.length > 0) {
+      const relativePaths = files.map((f) => relative(targetDir, f))
+      p.note(relativePaths.join('\n'), `${originalName} → ${newName}`)
+    }
+    return `Renamed in ${count} file${count === 1 ? '' : 's'} (${originalName} → ${newName})`
   })
 
   // Git init must happen before install so prepare scripts (e.g. lefthook) can find the repo
