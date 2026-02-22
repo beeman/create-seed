@@ -2,6 +2,7 @@ import { relative } from 'node:path'
 import * as p from '@clack/prompts'
 import { cloneTemplate } from './clone-template.ts'
 import { findTemplate } from './find-template.ts'
+import { formatWithBiome } from './format-with-biome.ts'
 import type { ResolvedArgs } from './get-args.ts'
 import { commitGitRepo, initGitRepo } from './init-git.ts'
 import { installDeps } from './install-deps.ts'
@@ -59,6 +60,18 @@ export async function createApp({ args, targetDir }: CreateAppOptions): Promise<
       p.note(relativePaths.join('\n'), `${originalName} → ${newName}`)
     }
     return `Renamed in ${count} file${count === 1 ? '' : 's'} (${originalName} → ${newName})`
+  })
+
+  await runStep('Formatting with Biome', async () => {
+    const result = await formatWithBiome(targetDir)
+    switch (result) {
+      case 'formatted':
+        return 'Formatted'
+      case 'skipped':
+        return 'Skipped — no Biome config found'
+      case 'failed':
+        return 'Formatting failed (see warning)'
+    }
   })
 
   // Git init must happen before install so prepare scripts (e.g. lefthook) can find the repo
