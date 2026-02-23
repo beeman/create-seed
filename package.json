@@ -1,6 +1,6 @@
 {
   "bin": {
-    "create-seed": "dist/cli.js"
+    "create-seed": "dist/cli.mjs"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",
@@ -14,13 +14,13 @@
     "@types/bun": "latest",
     "pkg-pr-new": "^0.0.62",
     "publint": "^0.3.16",
-    "tsup": "^8.5.1"
+    "tsdown": "^0.20.3"
   },
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
       },
       "require": {
         "types": "./dist/index.d.cts",
@@ -31,7 +31,7 @@
   "files": ["dist"],
   "license": "MIT",
   "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "name": "create-seed",
   "repository": {
     "type": "git",
@@ -41,7 +41,7 @@
     "typescript": "^5"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "changeset": "changeset",
     "check-types": "tsc -b --noEmit",
     "lint": "biome check --error-on-warnings",
@@ -53,6 +53,6 @@
     "version": "changeset version && bun lint:fix"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "version": "1.1.1"
 }
