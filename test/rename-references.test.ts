@@ -24,7 +24,7 @@ describe('renameReferences', () => {
     expect(readFileSync(filePath, 'utf-8')).toContain('beadhub-playground')
   })
 
-  test('skips binary files', async () => {
+  test('skips binary files with null bytes', async () => {
     mkdirSync(tmpDir, { recursive: true })
     const filePath = join(tmpDir, 'logo.png')
 
@@ -36,5 +36,19 @@ describe('renameReferences', () => {
     expect(result.count).toBe(0)
     expect(result.files).toEqual([])
     expect(readFileSync(filePath)).toEqual(Buffer.from([0, 1, 2, ...Buffer.from('bun-monorepo'), 0, 255]))
+  })
+
+  test('skips files with many control characters', async () => {
+    mkdirSync(tmpDir, { recursive: true })
+    const content = Buffer.from([1, 2, 3, 4, 5, 6, 7, 8, ...Buffer.from('bun-monorepo')])
+    const filePath = join(tmpDir, 'control.bin')
+
+    writeFileSync(filePath, content)
+
+    const result = await renameReferences(tmpDir, ['bun-monorepo'], 'beadhub-playground')
+
+    expect(result.count).toBe(0)
+    expect(result.files).toEqual([])
+    expect(readFileSync(filePath)).toEqual(content)
   })
 })

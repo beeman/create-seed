@@ -1,7 +1,7 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises'
+import { open, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const IGNORE_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', '.output', '.nuxt', '.turbo'])
+const IGNORE_DIRS = new Set(['.git', '.next', '.nuxt', '.output', '.turbo', 'dist', 'node_modules'])
 const BINARY_DETECTION_CHUNK_SIZE = 8000
 const BINARY_DETECTION_SUSPICIOUS_BYTE_THRESHOLD = 0.1
 
@@ -31,6 +31,18 @@ function isLikelyBinary(content: Buffer): boolean {
   }
 
   return suspiciousByteCount / chunk.length > BINARY_DETECTION_SUSPICIOUS_BYTE_THRESHOLD
+}
+
+async function readFilePrefix(file: string, size: number): Promise<Buffer> {
+  const handle = await open(file, 'r')
+
+  try {
+    const buffer = Buffer.alloc(size)
+    const { bytesRead } = await handle.read(buffer, 0, size, 0)
+    return buffer.subarray(0, bytesRead)
+  } finally {
+    await handle.close()
+  }
 }
 
 async function walkFiles(dir: string): Promise<string[]> {
@@ -84,12 +96,12 @@ export async function renameReferences(targetDir: string, oldNames: string[], ne
   const renamed: string[] = []
 
   for (const file of files) {
-    const rawContent = await readFile(file)
-    if (isLikelyBinary(rawContent)) {
+    const prefix = await readFilePrefix(file, BINARY_DETECTION_CHUNK_SIZE)
+    if (isLikelyBinary(prefix)) {
       continue
     }
 
-    const content = rawContent.toString('utf-8')
+    const content = await readFile(file, 'utf-8')
     let updated = content
 
     for (const pattern of patterns) {
