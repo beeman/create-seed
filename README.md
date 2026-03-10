@@ -104,6 +104,16 @@ This repo includes an AgentSkill for consistent usage patterns:
 
 - `skills/create-seed/SKILL.md`
 
+Install/discover it with the skills CLI:
+
+```bash
+# Discover skills in this repo
+bun x skills add create-seed/create-seed --list
+
+# Install the 'create-seed' skill
+bun x skills add create-seed/create-seed --skill create-seed --yes
+```
+
 ## Development
 
 ```bash
