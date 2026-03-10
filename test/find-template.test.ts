@@ -30,16 +30,16 @@ describe('findTemplate', () => {
   })
 
   test('treats owner/repo as external with gh: prefix', async () => {
-    expect(await findTemplate('beeman/templates')).toEqual({ id: 'gh:beeman/templates', mode: 'external' })
+    expect(await findTemplate('create-seed/templates')).toEqual({ id: 'gh:create-seed/templates', mode: 'external' })
   })
 
   test('treats gh:owner/repo as external without double-prefixing', async () => {
-    expect(await findTemplate('gh:beeman/templates')).toEqual({ id: 'gh:beeman/templates', mode: 'external' })
+    expect(await findTemplate('gh:create-seed/templates')).toEqual({ id: 'gh:create-seed/templates', mode: 'external' })
   })
 
   test('treats owner/repo/path as external', async () => {
-    expect(await findTemplate('beeman/templates/bun-library')).toEqual({
-      id: 'gh:beeman/templates/bun-library',
+    expect(await findTemplate('create-seed/templates/bun-library')).toEqual({
+      id: 'gh:create-seed/templates/bun-library',
       mode: 'external',
     })
   })

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const DEFAULT_TEMPLATES_URL = 'https://raw.githubusercontent.com/beeman/templates/main/templates.json'
+const DEFAULT_TEMPLATES_URL = 'https://raw.githubusercontent.com/create-seed/templates/main/templates.json'
 
 export interface Template {
   description: string

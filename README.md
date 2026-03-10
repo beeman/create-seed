@@ -38,7 +38,7 @@ Options:
 
 ## Templates
 
-Browse available templates at [beeman/templates](https://github.com/beeman/templates).
+Browse available templates at [create-seed/templates](https://github.com/create-seed/templates).
 
 You can also use any GitHub repo, subdirectory, or local path as a template:
 

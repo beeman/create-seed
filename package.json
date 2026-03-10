@@ -35,7 +35,7 @@
   "name": "create-seed",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/beeman/create-seed.git"
+    "url": "git+https://github.com/create-seed/create-seed.git"
   },
   "peerDependencies": {
     "typescript": "^5"

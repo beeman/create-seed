@@ -33,7 +33,7 @@
 ### Minor Changes
 
 - a00a470: Core scaffold CLI: template cloning via giget, PM auto-detection, git init with fallback identity, portable (no Bun runtime dependency)
-- cfd358f: Support short template names that resolve from the template registry (e.g. `bun-library` instead of `gh:beeman/templates/bun-library`)
+- cfd358f: Support short template names that resolve from the template registry (e.g. `bun-library` instead of `gh:create-seed/templates/bun-library`)
 - b2d10db: Add anonymous usage analytics via Umami. Respects DO_NOT_TRACK and CI environments.
 - a45b87b: Interactive prompts: ask for project name and template when not provided as args, confirm overwrite if directory exists
 - 14a6ac0: Add `registry generate` and `registry validate` subcommands for managing template registries
