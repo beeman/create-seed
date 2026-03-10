@@ -33,7 +33,7 @@ export function validateRegistry(root: string): ValidationError[] {
       continue
     }
     if (!template.path) {
-      errors.push({ message: `Template "${template.name ?? '?'}" missing required field: path`, type: 'error' })
+      errors.push({ message: `Template "${template.name}" missing required field: path`, type: 'error' })
       continue
     }
     if (!template.id) {

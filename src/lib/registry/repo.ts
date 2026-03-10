@@ -33,7 +33,7 @@ export function normalizeRepoSlug(input: unknown): string | undefined {
     .replace(/^https?:\/\/github\.com\//, '')
     .replace(/^git@github\.com:/, '')
 
-  const match = cleaned.match(/^([^/]+\/[^/#]+?)(?:\.git)?(?:[#/].*)?$/)
+  const match = cleaned.match(/^([a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+?)(?:\.git)?(?:[#/].*)?$/)
   return match?.[1]
 }
 
