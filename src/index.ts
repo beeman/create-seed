@@ -6,6 +6,7 @@ import { detectPm } from './lib/detect-pm.ts'
 import { getAppInfo } from './lib/get-app-info.ts'
 import { getArgs } from './lib/get-args.ts'
 import { getTemplates, type Template } from './lib/get-templates.ts'
+import { isNoDna } from './lib/is-no-dna.ts'
 import { generateReadme, generateRegistry, validateRegistry, writeReadme, writeRegistry } from './lib/registry.ts'
 import { trackEvent } from './lib/telemetry.ts'
 
@@ -182,6 +183,28 @@ export async function main(argv: string[]): Promise<void> {
     return
   }
 
+  const noDna = isNoDna()
+
+  if (noDna) {
+    const errors: string[] = []
+
+    if (!args.name) {
+      errors.push('project name is required (pass as positional argument).')
+    }
+
+    if (!args.template) {
+      errors.push('template is required (pass with --template).')
+    }
+
+    if (errors.length > 0) {
+      p.log.error('NO_DNA is set, but required arguments are missing.')
+      for (const error of errors) {
+        p.log.message(`- ${error}`)
+      }
+      process.exit(1)
+    }
+  }
+
   const projectName = args.name ?? (await promptName())
 
   // Resolve template: CLI arg, or interactive select from registry
@@ -201,6 +224,11 @@ export async function main(argv: string[]): Promise<void> {
   }
 
   if (existsSync(targetDir)) {
+    if (noDna) {
+      p.log.error(`NO_DNA is set: target directory already exists: "${projectName}".`)
+      process.exit(1)
+    }
+
     const overwrite = await p.confirm({
       initialValue: false,
       message: `Directory "${projectName}" already exists. Overwrite?`,

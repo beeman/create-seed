@@ -84,6 +84,22 @@ Override with `--pm`:
 bun x create-seed@latest my-app -t gh:owner/repo --pm bun
 ```
 
+## NO_DNA support
+
+`create-seed` supports the [`NO_DNA`](https://no-dna.org/) convention for non-human operators.
+
+When `NO_DNA` is set to a non-empty value, `create-seed` will never prompt interactively:
+
+- Project name must be passed as a positional argument
+- Template must be passed with `--template`
+- Existing target directories are not overwritten (command fails instead)
+
+Example:
+
+```bash
+NO_DNA=1 bun x create-seed@latest my-app -t bun-library
+```
+
 ## Analytics
 
 Anonymous usage statistics are collected via [Umami](https://umami.is) to help improve the tool. No personally identifiable information is collected.
